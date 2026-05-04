@@ -114,8 +114,8 @@ export function DashboardPage() {
       <div className="grid gap-6">
         <HeroSkeleton />
         <EmptyState
-          title="데이터가 없습니다"
-          description="Spring Boot API가 연결되면 유동 현금, 대출 잔액, 순자산 흐름이 표시됩니다."
+          title="데이터를 불러오지 못했어요"
+          description="재무 정보를 불러오는 중 문제가 발생했어요."
         />
       </div>
     )
@@ -284,7 +284,7 @@ function HeroSkeleton() {
       <p className="text-sm font-semibold text-blue-100">유동 현금</p>
       <h2 className="mt-3 text-5xl font-black tracking-tight">데이터 없음</h2>
       <p className="mt-6 max-w-2xl text-lg font-semibold leading-8 text-blue-50">
-        데이터를 불러오는 중이거나 아직 연결된 재무 데이터가 없습니다.
+        재무 정보를 불러오는 중 문제가 발생했어요.
       </p>
     </Card>
   )
