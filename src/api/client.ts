@@ -1,11 +1,13 @@
-export const apiClient = {
-  async get<T>(path: string): Promise<T> {
-    const response = await fetch(path)
+import axios from 'axios'
 
-    if (!response.ok) {
-      throw new Error(`Request failed: ${response.status}`)
-    }
+export const apiClient = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080/api',
+})
 
-    return response.json() as Promise<T>
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('API request failed', error)
+    return Promise.reject(error)
   },
-}
+)
