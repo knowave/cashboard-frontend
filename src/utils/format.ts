@@ -1,9 +1,9 @@
-export function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('ko-KR', {
-    style: 'currency',
-    currency: 'KRW',
+export function formatCurrency(value: number | null | undefined): string {
+  const safeValue = value ?? 0
+
+  return `${new Intl.NumberFormat('ko-KR', {
     maximumFractionDigits: 0,
-  }).format(value)
+  }).format(safeValue)}원`
 }
 
 export function formatWonInput(value: number | ''): string {

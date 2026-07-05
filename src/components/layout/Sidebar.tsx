@@ -6,6 +6,7 @@ const navItems = [
   { icon: '↗', label: 'Bills', to: '/fixed-expenses' },
   { icon: '↓', label: 'Loans', to: '/loans' },
   { icon: '◆', label: 'Plan', to: '/simulations' },
+  { icon: '◌', label: 'Budget', to: '/budget-strategy' },
 ]
 
 export function Sidebar() {

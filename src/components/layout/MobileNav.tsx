@@ -6,11 +6,12 @@ const navItems = [
   { label: 'Bills', to: '/fixed-expenses' },
   { label: 'Loans', to: '/loans' },
   { label: 'Plan', to: '/simulations' },
+  { label: 'Budget', to: '/budget-strategy' },
 ]
 
 export function MobileNav() {
   return (
-    <nav className="fixed inset-x-3 bottom-3 z-30 grid grid-cols-5 rounded-[1.75rem] border border-slate-200 bg-white/95 p-2 shadow-2xl shadow-slate-900/10 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95 lg:hidden">
+    <nav className="fixed inset-x-3 bottom-3 z-30 grid grid-cols-6 rounded-[1.75rem] border border-slate-200 bg-white/95 p-2 shadow-2xl shadow-slate-900/10 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95 lg:hidden">
       {navItems.map((item) => (
         <NavLink
           key={item.to}

@@ -9,14 +9,18 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { Link } from 'react-router-dom'
 import { Badge, type BadgeTone } from '../components/common/Badge'
 import { Card } from '../components/common/Card'
 import { EmptyState } from '../components/common/EmptyState'
 import { LoadingState } from '../components/common/LoadingState'
 import { SectionHeader } from '../components/common/SectionHeader'
 import { StatCard } from '../components/common/StatCard'
+import { useMonthlyBudget } from '../features/budget/hooks/useMonthlyBudget'
 import { useDashboard } from '../features/dashboard/hooks/useDashboard'
+import type { BudgetStatus, MonthlyBudgetResponse } from '../types/budget'
 import type { DashboardResponse } from '../types/dashboard'
+import { getCurrentMonth } from '../utils/date'
 import { formatCurrency } from '../utils/format'
 
 function getDecisionTone(decision: string): BadgeTone {
@@ -102,8 +106,34 @@ function buildTrendData(data: DashboardResponse) {
   ]
 }
 
+const budgetStatusLabels: Record<BudgetStatus, string> = {
+  CAUTION: '주의',
+  DANGER: '위험',
+  EMERGENCY: '비상상태',
+  GOOD: '여유',
+  STABLE: '안정',
+}
+
+const budgetStatusTones: Record<BudgetStatus, BadgeTone> = {
+  CAUTION: 'warning',
+  DANGER: 'danger',
+  EMERGENCY: 'danger',
+  GOOD: 'success',
+  STABLE: 'info',
+}
+
+function getBudgetStatus(budget: MonthlyBudgetResponse): BudgetStatus {
+  if (budget.dailyAvailableAmount <= 15000) {
+    return 'EMERGENCY'
+  }
+
+  return budget.status
+}
+
 export function DashboardPage() {
   const { data, isError, isLoading } = useDashboard()
+  const currentMonth = getCurrentMonth()
+  const monthlyBudgetQuery = useMonthlyBudget(currentMonth)
 
   if (isLoading) {
     return <LoadingState title="데이터를 불러오는 중입니다" />
@@ -218,6 +248,8 @@ export function DashboardPage() {
         ))}
       </section>
 
+      <BudgetStrategySummary budget={monthlyBudgetQuery.data} isLoading={monthlyBudgetQuery.isLoading} />
+
       <section className="grid gap-5 xl:grid-cols-2">
         <Card>
           <SectionHeader
@@ -275,6 +307,83 @@ export function DashboardPage() {
         </Card>
       </section>
     </div>
+  )
+}
+
+function BudgetStrategySummary({
+  budget,
+  isLoading,
+}: {
+  budget?: MonthlyBudgetResponse
+  isLoading: boolean
+}) {
+  if (isLoading) {
+    return (
+      <Card>
+        <LoadingState title="생활비 전략을 불러오는 중입니다." />
+      </Card>
+    )
+  }
+
+  if (!budget) {
+    return (
+      <Card>
+        <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
+          <EmptyState title="이번 달 생활비 예산을 먼저 설정해주세요." />
+          <Link
+            className="inline-flex min-h-10 items-center justify-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:bg-blue-500 dark:hover:bg-blue-400 dark:focus-visible:ring-offset-slate-950"
+            to="/budget-strategy"
+          >
+            생활비 전략 설정하기
+          </Link>
+        </div>
+      </Card>
+    )
+  }
+
+  const status = getBudgetStatus(budget)
+
+  return (
+    <Card>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <SectionHeader
+          title="생활비 전략"
+          description="이번 달 남은 생활비로 오늘과 이번 주에 쓸 수 있는 금액입니다."
+        />
+        <Badge tone={budgetStatusTones[status]}>{budgetStatusLabels[status]}</Badge>
+      </div>
+      <section className="mt-5 grid gap-4 sm:grid-cols-3">
+        <StatCard
+          label="오늘 쓸 수 있는 돈"
+          value={formatCurrency(budget.dailyAvailableAmount)}
+          description="하루 사용 가능 금액"
+          tone={status === 'EMERGENCY' || status === 'DANGER' ? 'danger' : 'primary'}
+        />
+        <StatCard
+          label="이번 주 사용 가능 금액"
+          value={formatCurrency(budget.weeklyAvailableAmount)}
+          description="7일 기준 생활비 여력"
+          tone="success"
+        />
+        <StatCard
+          label="남은 생활비"
+          value={formatCurrency(budget.remainingAmount)}
+          description={`${budget.remainingDays}일 동안 사용할 돈`}
+          tone="neutral"
+        />
+      </section>
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-slate-50 p-5 dark:bg-slate-950">
+        <p className="text-sm font-semibold leading-6 text-slate-600 dark:text-slate-300">
+          {budget.strategyMessage || '이번 달 소비 흐름을 확인해보세요.'}
+        </p>
+        <Link
+          className="inline-flex min-h-10 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800 dark:focus-visible:ring-offset-slate-950"
+          to="/budget-strategy"
+        >
+          자세히 보기
+        </Link>
+      </div>
+    </Card>
   )
 }
 
